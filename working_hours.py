@@ -1,12 +1,7 @@
 import calendar
 from openpyxl.styles import Font
-from calendar import monthrange, Calendar
-import pyperclip
 import datetime
-import time
 import openpyxl
-from tkinter import *
-import keyboard
 from project_class import Project
 from data import Data
 from ui import AppInterface
@@ -25,9 +20,7 @@ first_day_of_the_month = date.replace(day=1)
 locale.setlocale(locale.LC_ALL, "fr_FR.UTF-8")
 
 #--------------------------INIT-----------------------------------
-file_path = "odpisy hodin Major.xlsx"
-main_workbook = openpyxl.load_workbook("odpisy hodin Major.xlsx")
-# active_sheet = main_workbook.active
+file_path = "odpisy hodin Major_.xlsx"
 current_sheet_name = f"{month_name}{year}"
 
 #--- Check for data save file ---#
@@ -37,8 +30,6 @@ if not os.path.exists(filename):
     with open(filename, mode="w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["project", "time"])
-
-
 
 #----------------------NEW MONTH SHEET--------------------------------------
 
@@ -52,12 +43,16 @@ def get_workdays(year, month, first_day):
     return workdays
 
 # If sheet exists, skip, if new month, create new.
+
 try:
+    main_workbook = openpyxl.load_workbook(file_path)
     active_sheet = main_workbook[current_sheet_name]
+    main_workbook.close()
 
 except KeyError:
     print("novy_sesit")
     #New Month -> clone previous sheet
+    main_workbook = openpyxl.load_workbook(file_path)
     source = main_workbook.active
     new_sheet = main_workbook.copy_worksheet(source)
     new_sheet.title = current_sheet_name
@@ -91,22 +86,22 @@ except KeyError:
             active_sheet.cell(row, 2).value = workdays[day].strftime("%d.%m.%Y")
             day += 1
     main_workbook.save(file_path)
+    main_workbook.close()
 
 #------------------------------------MAIN----------------------------------------
+
 
 data_class = Data()
 project_class = Project()
 interface = AppInterface(project_class, data_class)
 
 
-
 #----------------------PROJECT, HOURS ENTRY--------------------------------------
-
-active_sheet = main_workbook[current_sheet_name]
-
 
 
 try: #This is ---- last project entry to the save file ----
+    main_workbook = openpyxl.load_workbook(file_path)
+    active_sheet = main_workbook[current_sheet_name]
     project_class.stop_time()
     data_class.write_data(project_class.project_name, project_class.project_time)
 
@@ -161,6 +156,7 @@ try: #This is ---- last project entry to the save file ----
 
 # save changes and exit
     main_workbook.save(file_path)
+    main_workbook.close()
 
 # When exit program, just pass out.
 except AttributeError:
