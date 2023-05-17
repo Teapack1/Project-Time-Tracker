@@ -1,5 +1,5 @@
 import calendar
-from openpyxl.styles import Font
+from openpyxl.styles import Font, numbers
 import datetime
 import openpyxl
 from project_class import Project
@@ -138,7 +138,8 @@ try: #This is ---- last project entry to the save file ----
                 new_value = current_value + time_spent
             except TypeError:
                 new_value = time_spent
-            active_sheet.cell(date_index + 3, project_index + 3, value=locale.format_string("%.2f", new_value, grouping=True))
+            #active_sheet.cell(date_index + 3, project_index + 3, value=float(locale.format_string("%.1f", new_value, grouping=False)))
+            active_sheet.cell(date_index + 3, project_index + 3, value=round(new_value, 1))
         else:
             project_index = 0
             for idx, item in enumerate(projects):
@@ -148,7 +149,8 @@ try: #This is ---- last project entry to the save file ----
             print(project_index)
             print(projects)
 
-            active_sheet.cell(date_index + 3, project_index + 3, value=locale.format_string("%.2f", time_spent, grouping=True))
+           # active_sheet.cell(date_index + 3, project_index + 3, value=float(locale.format_string("%.1f", time_spent, grouping=False)))
+            active_sheet.cell(date_index + 3, project_index + 3, value=round(time_spent, 1))
             active_sheet.cell(2, project_index + 3).value = active_project
 
     # Delete save file after relation safely ends
