@@ -1,4 +1,5 @@
-from tkinter import *
+
+from tkinter import Tk, Label, Button, Entry, END
 from project_class import Project
 from data import Data
 import pyperclip

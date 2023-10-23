@@ -20,16 +20,28 @@ first_day_of_the_month = date.replace(day=1)
 locale.setlocale(locale.LC_ALL, "fr_FR.UTF-8")
 
 #--------------------------INIT-----------------------------------
-file_path = "odpisy hodin Major_.xlsx"
+file_path = "T:/Konstrukce/Elektro - tvorba schémat/odpisy hodin/2017/06/odpisy hodin Major - Copy.xlsx"
 current_sheet_name = f"{month_name}{year}"
 
 #--- Check for data save file ---#
 filename = "project_data.txt"
+expected_line = "project,time\n"
 
 if not os.path.exists(filename):
     with open(filename, mode="w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["project", "time"])
+
+# Open the text file and read the first line
+with open(filename, 'r') as file:
+    lines = file.readlines()
+
+if not lines or lines[0] != expected_line:
+    print("debug")
+    with open(filename, 'w') as file:
+        file.write(expected_line)  # Write the correct 0th line
+        file.writelines(lines)  # Write the original content
+
 
 #----------------------NEW MONTH SHEET--------------------------------------
 
@@ -58,7 +70,8 @@ except KeyError:
     new_sheet.title = current_sheet_name
 
     #reset cells
-    month_anchor = first_day_of_the_month.weekday()+3 #sets initial row for the first day of the month.
+    first_day_weekday = first_day_of_the_month.weekday() # get what day is the first day
+    month_anchor = ((7 - first_day_weekday + 0) % 7 ) + 3 #sets initial row for the first day of the month.
     active_sheet = main_workbook[new_sheet.title]
     active_sheet["A1"] = f"Odpisy za měsíc {month_name} {year}"
 
@@ -82,7 +95,7 @@ except KeyError:
 # Write Dates
     for row in range(3, 32):
         active_sheet.cell(row, 2).value = None
-        if row >= month_anchor and row != 8 and row != 14 and row != 20 and row != 26 and day < len(workdays):
+        if row >= month_anchor and row != 9 and row != 15 and row != 21 and row != 27 and day < len(workdays):
             active_sheet.cell(row, 2).value = workdays[day].strftime("%d.%m.%Y")
             day += 1
     main_workbook.save(file_path)
