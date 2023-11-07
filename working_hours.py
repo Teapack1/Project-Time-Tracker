@@ -1,5 +1,5 @@
 import calendar
-from openpyxl.styles import Font, numbers
+from openpyxl.styles import Font
 import datetime
 import openpyxl
 from project_class import Project
@@ -13,17 +13,30 @@ import locale
 # Current date and time.
 date = datetime.datetime.now()
 month = date.month
-months = ["Leden", "Únor", "Březen", "Duben", "Květen", "Červen", "Červenec", "Srpen", "Září", "Říjen", "Listopad", "Prosinec"]
-month_name = months[month-1]
+months = [
+    "Leden",
+    "Únor",
+    "Březen",
+    "Duben",
+    "Květen",
+    "Červen",
+    "Červenec",
+    "Srpen",
+    "Září",
+    "Říjen",
+    "Listopad",
+    "Prosinec",
+]
+month_name = months[month - 1]
 year = date.year
 first_day_of_the_month = date.replace(day=1)
 locale.setlocale(locale.LC_ALL, "fr_FR.UTF-8")
 
-#--------------------------INIT-----------------------------------
+# --------------------------INIT-----------------------------------
 file_path = "T:/Konstrukce/Elektro - tvorba schémat/odpisy hodin/2017/06/odpisy hodin Major - Copy.xlsx"
 current_sheet_name = f"{month_name}{year}"
 
-#--- Check for data save file ---#
+# --- Check for data save file ---#
 filename = "project_data.txt"
 expected_line = "project,time\n"
 
@@ -33,26 +46,34 @@ if not os.path.exists(filename):
         writer.writerow(["project", "time"])
 
 # Open the text file and read the first line
-with open(filename, 'r') as file:
+with open(filename, "r") as file:
     lines = file.readlines()
 
 if not lines or lines[0] != expected_line:
     print("debug")
-    with open(filename, 'w') as file:
+    with open(filename, "w") as file:
         file.write(expected_line)  # Write the correct 0th line
         file.writelines(lines)  # Write the original content
 
 
-#----------------------NEW MONTH SHEET--------------------------------------
+# ----------------------NEW MONTH SHEET--------------------------------------
+
 
 def get_workdays(year, month, first_day):
     num_days = calendar.monthrange(year, month)[1]
-    days = [datetime.date(year, month, day) for day in range(1, num_days+1)]
+    days = [datetime.date(year, month, day) for day in range(1, num_days + 1)]
     workdays = []
     for x in days:
-        if x.weekday()==0 or x.weekday()==1 or x.weekday()==2 or x.weekday()==3 or x.weekday()==4:
+        if (
+            x.weekday() == 0
+            or x.weekday() == 1
+            or x.weekday() == 2
+            or x.weekday() == 3
+            or x.weekday() == 4
+        ):
             workdays.append(x)
     return workdays
+
 
 # If sheet exists, skip, if new month, create new.
 
@@ -63,21 +84,23 @@ try:
 
 except KeyError:
     print("novy_sesit")
-    #New Month -> clone previous sheet
+    # New Month -> clone previous sheet
     main_workbook = openpyxl.load_workbook(file_path)
     source = main_workbook.active
     new_sheet = main_workbook.copy_worksheet(source)
     new_sheet.title = current_sheet_name
 
-    #reset cells
-    first_day_weekday = first_day_of_the_month.weekday() # get what day is the first day
-    month_anchor = ((7 - first_day_weekday + 0) % 7 ) + 3 #sets initial row for the first day of the month.
+    # reset cells
+    first_day_weekday = first_day_of_the_month.weekday()
+    # get what day is the first day
+    month_anchor = (first_day_weekday + 4) if first_day_weekday < 5 else 4
+    # sets initial row for the first day of the month.
     active_sheet = main_workbook[new_sheet.title]
     active_sheet["A1"] = f"Odpisy za měsíc {month_name} {year}"
 
     default_font = "000000"
-# Delete cells
-    for col in range(3, 49):#49 is the end
+    # Delete cells
+    for col in range(3, 49):  # 49 is the end
         for row in range(2, 33):
             active_sheet.cell(row, col).value = None
             cell = active_sheet.cell(row=row, column=col)
@@ -86,33 +109,40 @@ except KeyError:
         cell = active_sheet.cell(row=33, column=col)
         cell.font = Font(color=default_font)
 
-    #Create signatures and others columns:
+    # Create signatures and others columns:
     active_sheet.cell(2, 47).value = "ostatni"
     active_sheet.cell(2, 48).value = "signature"
 
     day = 0
     workdays = get_workdays(year=year, month=month, first_day=first_day_of_the_month)
-# Write Dates
-    for row in range(3, 32):
+    # Write Dates
+    for row in range(3, 33):
         active_sheet.cell(row, 2).value = None
-        if row >= month_anchor and row != 9 and row != 15 and row != 21 and row != 27 and day < len(workdays):
+        if (
+            row >= month_anchor
+            and row != 9
+            and row != 15
+            and row != 21
+            and row != 27
+            and day < len(workdays)
+        ):
             active_sheet.cell(row, 2).value = workdays[day].strftime("%d.%m.%Y")
             day += 1
     main_workbook.save(file_path)
     main_workbook.close()
 
-#------------------------------------MAIN----------------------------------------
+# ------------------------------------MAIN----------------------------------------
+
+if __name__ == "__main__":
+    data_class = Data()
+    project_class = Project()
+    interface = AppInterface(project_class, data_class)
 
 
-data_class = Data()
-project_class = Project()
-interface = AppInterface(project_class, data_class)
+# ----------------------PROJECT, HOURS ENTRY--------------------------------------
 
 
-#----------------------PROJECT, HOURS ENTRY--------------------------------------
-
-
-try: #This is ---- last project entry to the save file ----
+try:  # This is ---- last project entry to the save file ----
     main_workbook = openpyxl.load_workbook(file_path)
     active_sheet = main_workbook[current_sheet_name]
     project_class.stop_time()
@@ -134,7 +164,7 @@ try: #This is ---- last project entry to the save file ----
         dates = []
         for col in range(3, 49):
             projects.append(active_sheet.cell(2, col).value)
-        for row in range(3,31):
+        for row in range(3, 31):
             dates.append(active_sheet.cell(row, 2).value)
 
         try:
@@ -146,13 +176,15 @@ try: #This is ---- last project entry to the save file ----
         if active_project in projects:
             project_index = projects.index(active_project)
 
-            current_value = active_sheet.cell(date_index+3, project_index+3).value
+            current_value = active_sheet.cell(date_index + 3, project_index + 3).value
             try:
                 new_value = current_value + time_spent
             except TypeError:
                 new_value = time_spent
-            #active_sheet.cell(date_index + 3, project_index + 3, value=float(locale.format_string("%.1f", new_value, grouping=False)))
-            active_sheet.cell(date_index + 3, project_index + 3, value=round(new_value, 1))
+            # active_sheet.cell(date_index + 3, project_index + 3, value=float(locale.format_string("%.1f", new_value, grouping=False)))
+            active_sheet.cell(
+                date_index + 3, project_index + 3, value=round(new_value, 1)
+            )
         else:
             project_index = 0
             for idx, item in enumerate(projects):
@@ -162,14 +194,16 @@ try: #This is ---- last project entry to the save file ----
             print(project_index)
             print(projects)
 
-           # active_sheet.cell(date_index + 3, project_index + 3, value=float(locale.format_string("%.1f", time_spent, grouping=False)))
-            active_sheet.cell(date_index + 3, project_index + 3, value=round(time_spent, 1))
+            # active_sheet.cell(date_index + 3, project_index + 3, value=float(locale.format_string("%.1f", time_spent, grouping=False)))
+            active_sheet.cell(
+                date_index + 3, project_index + 3, value=round(time_spent, 1)
+            )
             active_sheet.cell(2, project_index + 3).value = active_project
 
     # Delete save file after relation safely ends
     data_class.delete_data()
 
-# save changes and exit
+    # save changes and exit
     main_workbook.save(file_path)
     main_workbook.close()
 
@@ -177,4 +211,3 @@ try: #This is ---- last project entry to the save file ----
 except AttributeError:
     print("Exited without action")
     pass
-
