@@ -1,9 +1,11 @@
 
-from tkinter import Tk, Label, Button, Entry, END
+from tkinter import Tk, Label, Button, Entry, END, messagebox
 from project_class import Project
 from data import Data
 import pyperclip
 import keyboard
+import openpyxl
+
 
 GREEN = "#71C9CE"
 LIGHT_GREEN = "#A6E3E9"
@@ -14,6 +16,7 @@ BACKGROUND = "#E3FDFD"
 BUTTON_TEXT = ("Lucida Sans Unicode", 10)
 BUTTON_TEXT_ = ("Lucida Sans Unicode", 10, "bold")
 HEAD_TEXT = ("Lucida Sans Unicode", 14)
+SMALL_BUTTON_TEXT = ("Lucida Sans Unicode", 6)
 
 last_project = None
 time_spent = 0
@@ -23,6 +26,8 @@ class AppInterface:
     def __init__(self, project_class: Project, data: Data):
         self.project_class = project_class
         self.data = data
+
+        self.normalize_on_exit = False
 
         self.window = Tk()
         self.window.title("Work hours")
@@ -46,6 +51,10 @@ class AppInterface:
 
         self.pause = Button(text="Pause", width=8, height=1, bg="white", font=BUTTON_TEXT, command=self.pause_fn)
         self.pause.grid(column=3, row=2, pady=1, sticky="e")
+        
+        self.normalize_button = Button(self.window, text="norm", width=4, height=1, bg="white", font=SMALL_BUTTON_TEXT, command=self.confirm_normalize)
+        self.normalize_button.grid(column=3, row=0, sticky="ne", padx=1, pady=1)
+
 
         # Entry
         self.entry = Entry(width=32)
@@ -170,3 +179,11 @@ class AppInterface:
         self.label_set_project.config(text="Enter the project number:")
         self.entry.delete(0,END)
         self.init_col_but()
+        
+    
+    def confirm_normalize(self):
+        # This function will be called when the normalize button is clicked.
+        response = messagebox.askquestion("Normalize hours", "Normalize month table to 7.5 hours per day?")
+        if response == 'yes':
+            self.normalize_on_exit = True
+            self.window.destroy()   # This will close the program after normalizing

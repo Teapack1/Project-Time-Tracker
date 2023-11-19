@@ -1,10 +1,9 @@
-import calendar
-from openpyxl.styles import Font
 import datetime
 import openpyxl
 from project_class import Project
 from data import Data
 from ui import AppInterface
+from copy_style import CopyStyle
 import os
 import csv
 import locale
@@ -33,8 +32,19 @@ first_day_of_the_month = date.replace(day=1)
 locale.setlocale(locale.LC_ALL, "fr_FR.UTF-8")
 
 # --------------------------INIT-----------------------------------
-file_path = "T:/Konstrukce/Elektro - tvorba schémat/odpisy hodin/2017/06/odpisy hodin Major - Copy.xlsx"
+template_path = "Project_Sheet.xlsx"
+file_path = "worksheet.xlsx"
 current_sheet_name = f"{month_name}{year}"
+copy_style = CopyStyle(
+    template = template_path, 
+    file_path = file_path, 
+    current_sheet_name = current_sheet_name, 
+    first_day_of_the_month = first_day_of_the_month, 
+    month_name = month_name, 
+    year = year, 
+    month = month
+    )
+
 
 # --- Check for data save file ---#
 filename = "project_data.txt"
@@ -56,87 +66,38 @@ if not lines or lines[0] != expected_line:
         file.writelines(lines)  # Write the original content
 
 
+
 # ----------------------NEW MONTH SHEET--------------------------------------
 
-
-def get_workdays(year, month, first_day):
-    num_days = calendar.monthrange(year, month)[1]
-    days = [datetime.date(year, month, day) for day in range(1, num_days + 1)]
-    workdays = []
-    for x in days:
-        if (
-            x.weekday() == 0
-            or x.weekday() == 1
-            or x.weekday() == 2
-            or x.weekday() == 3
-            or x.weekday() == 4
-        ):
-            workdays.append(x)
-    return workdays
 
 
 # If sheet exists, skip, if new month, create new.
 
 try:
+    print(f"opening {month_name} month in {file_path} sheet")
     main_workbook = openpyxl.load_workbook(file_path)
     active_sheet = main_workbook[current_sheet_name]
     main_workbook.close()
 
+except FileNotFoundError:
+    # New Month -> clone from template
+    print(f"{file_path} not found. Creating new workbook")
+    copy_style.produce_workbook()
+
+
 except KeyError:
-    print("novy_sesit")
     # New Month -> clone previous sheet
-    main_workbook = openpyxl.load_workbook(file_path)
-    source = main_workbook.active
-    new_sheet = main_workbook.copy_worksheet(source)
-    new_sheet.title = current_sheet_name
+    print(f"creating {month_name} month sheet")
+    copy_style.produce_worksheet()
 
-    # reset cells
-    first_day_weekday = first_day_of_the_month.weekday()
-    # get what day is the first day
-    month_anchor = (first_day_weekday + 4) if first_day_weekday < 5 else 4
-    # sets initial row for the first day of the month.
-    active_sheet = main_workbook[new_sheet.title]
-    active_sheet["A1"] = f"Odpisy za měsíc {month_name} {year}"
 
-    default_font = "000000"
-    # Delete cells
-    for col in range(3, 49):  # 49 is the end
-        for row in range(2, 33):
-            active_sheet.cell(row, col).value = None
-            cell = active_sheet.cell(row=row, column=col)
-            cell.font = Font(color=default_font)
-    for col in range(3, 49):
-        cell = active_sheet.cell(row=33, column=col)
-        cell.font = Font(color=default_font)
-
-    # Create signatures and others columns:
-    active_sheet.cell(2, 47).value = "ostatni"
-    active_sheet.cell(2, 48).value = "signature"
-
-    day = 0
-    workdays = get_workdays(year=year, month=month, first_day=first_day_of_the_month)
-    # Write Dates
-    for row in range(3, 33):
-        active_sheet.cell(row, 2).value = None
-        if (
-            row >= month_anchor
-            and row != 9
-            and row != 15
-            and row != 21
-            and row != 27
-            and day < len(workdays)
-        ):
-            active_sheet.cell(row, 2).value = workdays[day].strftime("%d.%m.%Y")
-            day += 1
-    main_workbook.save(file_path)
-    main_workbook.close()
-
-# ------------------------------------MAIN----------------------------------------
+# ------------------------------------MAIN LOOP---------------------------------------
 
 if __name__ == "__main__":
     data_class = Data()
     project_class = Project()
     interface = AppInterface(project_class, data_class)
+
 
 
 # ----------------------PROJECT, HOURS ENTRY--------------------------------------
@@ -200,14 +161,21 @@ try:  # This is ---- last project entry to the save file ----
             )
             active_sheet.cell(2, project_index + 3).value = active_project
 
+
     # Delete save file after relation safely ends
     data_class.delete_data()
 
     # save changes and exit
     main_workbook.save(file_path)
     main_workbook.close()
+    
 
 # When exit program, just pass out.
 except AttributeError:
     print("Exited without action")
     pass
+
+# If exited with normalization step, normalize hours
+if interface.normalize_on_exit == True:
+    copy_style.normalize_hours() 
+interface.normalize_on_exit == False
