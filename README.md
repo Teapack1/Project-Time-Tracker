@@ -38,6 +38,8 @@ This is a straightforward tool for tracking time spent on different projects. It
 - At the end of the month, check the Excel file for a complete record of your work, neatly organized by day and project.
 - You can also use the normalize feature to fill days that does not reach 7.5 hours of projects.
 - You can adjust the look of your sheets by editing the "Project_Sheet.xlsx" template in the folder.
+- Users can run this script from the command line to set up their preferences. For example:
+    `python setup.py --excel_location "C:/MyTimeTracker" --project1 "R&D" --project2 "Admin" --normalize_hours 8`
 
 
 ## License
