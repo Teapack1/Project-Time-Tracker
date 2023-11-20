@@ -3,46 +3,89 @@ import openpyxl
 from project_class import Project
 from data import Data
 from ui import AppInterface
-from copy_style import CopyStyle
+from sheet_proc import CopyStyle
 import os
 import csv
 import locale
+import json
 
+
+# Function to read configuration
+def read_configuration():
+    default_config = {
+        "excel_location": ".",
+        "default_projects": ["Others", "RnD"],
+        "normalize_hours": 7.5,
+        "language": 0,  # Default language (0 - English)
+        "name": "projectLog"
+    }
+
+    if os.path.isfile('config.json'):
+        with open('config.json', 'r') as config_file:
+            return json.load(config_file)
+    else:
+        return default_config
+
+
+# --------------------------INIT-----------------------------------
+
+
+# Read the configuration
+config = read_configuration()
+
+# Set the locale based on the language configuration
+if config["language"] == 1:  # 1 for Czech
+    locale.setlocale(locale.LC_ALL, "cs_CZ.UTF-8")
+else:  # Default to English
+    locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
+    
 
 # Current date and time.
 date = datetime.datetime.now()
 month = date.month
-months = [
-    "Leden",
-    "Únor",
-    "Březen",
-    "Duben",
-    "Květen",
-    "Červen",
-    "Červenec",
-    "Srpen",
-    "Září",
-    "Říjen",
-    "Listopad",
-    "Prosinec",
-]
+
+# Set the locale based on the language configuration, setup config variables
+if config["language"] == 1:  # 1 for Czech
+    locale.setlocale(locale.LC_ALL, "cs_CZ.UTF-8")
+    months = [
+        "Leden", "Únor", "Březen", "Duben", "Květen", "Červen", 
+        "Červenec", "Srpen", "Září", "Říjen", "Listopad", "Prosinec"
+    ]
+if config["language"] == 0:  # Default to English
+    locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
+    months = [
+        "January", "February", "March", "April", "May", "June", 
+        "July", "August", "September", "October", "November", "December"
+    ]
+
+
 month_name = months[month - 1]
 year = date.year
 first_day_of_the_month = date.replace(day=1)
 locale.setlocale(locale.LC_ALL, "fr_FR.UTF-8")
 
-# --------------------------INIT-----------------------------------
-template_path = "Project_Sheet.xlsx"
-file_path = "worksheet.xlsx"
+config["TABLE_WIDTH"] = config.get("table_width", 46)
+config["FIRST_COLUMN"] = 3
+config["LAST_COLUMN"] = config["FIRST_COLUMN"] + config["TABLE_WIDTH"]
+config["DATE_COLUMN"] = 2
+config["PROJECT_ROW"] = 2
+
+print(config["excel_location"])
+normalized_path = os.path.normpath(config["excel_location"])
+print(normalized_path)
+TEMPLATE_PATH = "Project_Sheet.xlsx"
+FILE_PATH = os.path.join(normalized_path, config["name"] + ".xlsx")
+
 current_sheet_name = f"{month_name}{year}"
-copy_style = CopyStyle(
-    template = template_path, 
-    file_path = file_path, 
+sheet_processor = CopyStyle(
+    template = TEMPLATE_PATH, 
+    file_path = FILE_PATH, 
     current_sheet_name = current_sheet_name, 
     first_day_of_the_month = first_day_of_the_month, 
     month_name = month_name, 
     year = year, 
-    month = month
+    month = month,
+    config = config
     )
 
 
@@ -74,37 +117,38 @@ if not lines or lines[0] != expected_line:
 # If sheet exists, skip, if new month, create new.
 
 try:
-    print(f"opening {month_name} month in {file_path} sheet")
-    main_workbook = openpyxl.load_workbook(file_path)
+    print(f"opening {month_name} month in {FILE_PATH} sheet")
+    main_workbook = openpyxl.load_workbook(FILE_PATH)
     active_sheet = main_workbook[current_sheet_name]
     main_workbook.close()
 
 except FileNotFoundError:
     # New Month -> clone from template
-    print(f"{file_path} not found. Creating new workbook")
-    copy_style.produce_workbook()
+    print(f"{FILE_PATH} not found. Creating new workbook")
+    sheet_processor.produce_workbook()
+
 
 
 except KeyError:
     # New Month -> clone previous sheet
     print(f"creating {month_name} month sheet")
-    copy_style.produce_worksheet()
+    sheet_processor.produce_worksheet()
 
 
 # ------------------------------------MAIN LOOP---------------------------------------
 
+
 if __name__ == "__main__":
     data_class = Data()
     project_class = Project()
-    interface = AppInterface(project_class, data_class)
-
+    interface = AppInterface(project_class, data_class, config)
 
 
 # ----------------------PROJECT, HOURS ENTRY--------------------------------------
 
 
 try:  # This is ---- last project entry to the save file ----
-    main_workbook = openpyxl.load_workbook(file_path)
+    main_workbook = openpyxl.load_workbook(FILE_PATH)
     active_sheet = main_workbook[current_sheet_name]
     project_class.stop_time()
     data_class.write_data(project_class.project_name, project_class.project_time)
@@ -123,9 +167,9 @@ try:  # This is ---- last project entry to the save file ----
         time_spent = float(project["time"])
         projects = []
         dates = []
-        for col in range(3, 49):
-            projects.append(active_sheet.cell(2, col).value)
-        for row in range(3, 31):
+        for col in range(config["FIRST_COLUMN"], config["LAST_COLUMN"]):
+            projects.append(active_sheet.cell(config["PROJECT_ROW"], col).value)
+        for row in range(3, 31):    # Static range for one month
             dates.append(active_sheet.cell(row, 2).value)
 
         try:
@@ -166,7 +210,7 @@ try:  # This is ---- last project entry to the save file ----
     data_class.delete_data()
 
     # save changes and exit
-    main_workbook.save(file_path)
+    main_workbook.save(FILE_PATH)
     main_workbook.close()
     
 
@@ -177,5 +221,7 @@ except AttributeError:
 
 # If exited with normalization step, normalize hours
 if interface.normalize_on_exit == True:
-    copy_style.normalize_hours() 
+    print("debug")
+    sheet_processor.normalize_hours(col_start=config["FIRST_COLUMN"], col_end=config["LAST_COLUMN"], target_hours=config["normalize_hours"]) 
+
 interface.normalize_on_exit == False

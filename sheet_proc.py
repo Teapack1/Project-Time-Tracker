@@ -6,7 +6,7 @@ import calendar
 import datetime
 
 class CopyStyle:
-    def __init__(self, template, file_path, current_sheet_name, first_day_of_the_month, month_name, year, month):
+    def __init__(self, template, file_path, current_sheet_name, first_day_of_the_month, month_name, year, month, config):
         # Initialize the CopyStyle object with paths and sheet name
         self.template_path = template
         self.file_path = file_path
@@ -15,6 +15,8 @@ class CopyStyle:
         self.month_name = month_name
         self.year = year
         self.month = month
+        self.config = config
+        self.default_font = "000000"
         
 
     def copy_cell(self, source_cell, target_cell):
@@ -58,7 +60,7 @@ class CopyStyle:
         self.new_sheet = self.main_workbook.create_sheet(title=self.current_sheet_name)
 
         # Copy data and formatting from the template sheet to the new sheet
-        for row in template_sheet.iter_rows():
+        for row in template_sheet.iter_rows(min_row=1, max_row=34, min_col=1, max_col=50):
             for cell in row:
                 new_cell = self.new_sheet.cell(row=cell.row, column=cell.column, value=cell.value)
                 self.copy_cell(cell, new_cell)
@@ -86,12 +88,12 @@ class CopyStyle:
         # Create a new workbook and remove the default sheet
         self.main_workbook = openpyxl.Workbook()
         self.main_workbook.remove(self.main_workbook.active)
-
+        
         # Create a new sheet with the specified name
         self.new_sheet = self.main_workbook.create_sheet(title=self.current_sheet_name)
 
         # Copy data and formatting from the template sheet to the new sheet
-        for row in template_sheet.iter_rows():
+        for row in template_sheet.iter_rows(min_row=1, max_row=34, min_col=1, max_col=50):
             for cell in row:
                 new_cell = self.new_sheet.cell(row=cell.row, column=cell.column, value=cell.value)
                 self.copy_cell(cell, new_cell)
@@ -117,29 +119,59 @@ class CopyStyle:
             
     def reset_cells(self):
         
+        text_labels = {
+            0: {  # English
+                "title_label": "Project work log for the month",
+                "project_label": "Project",
+                "date_label": "Date",
+                "total_sum_label": "Total Sum",
+                "sum_per_day_label": "Sum per Day",
+                "overtime_label": "Overtime"
+            },
+            1: {  # Czech
+                "title_label": "Odpisy hodin za měsíc",
+                "project_label": "Projekt",
+                "date_label": "Datum",
+                "total_sum_label": "Suma celkem",
+                "sum_per_day_label": "Suma den",
+                "overtime_label": "Přesčas"
+            }
+            # Additional languages can be added here
+        }
+        language = text_labels.get(self.config["language"], text_labels[0])
+        
         # reset cells
         first_day_weekday = self.first_day_of_the_month.weekday()
         # get what day is the first day
         month_anchor = (first_day_weekday + 4) if first_day_weekday < 5 else 4
         # sets initial row for the first day of the month.
         active_sheet = self.main_workbook[self.new_sheet.title]
-        active_sheet["A1"] = f"Odpisy za měsíc {self.month_name} {self.year}"
 
-        default_font = "000000"
+        
         # Delete cells
         for col in range(3, 49):  # 49 is the end
             for row in range(2, 33):
                 active_sheet.cell(row, col).value = None
                 cell = active_sheet.cell(row=row, column=col)
-                cell.font = Font(color=default_font)
+                cell.font = Font(color=self.default_font)
         for col in range(3, 49):
             cell = active_sheet.cell(row=33, column=col)
-            cell.font = Font(color=default_font)
+            cell.font = Font(color=self.default_font)
 
-        # Create signatures and others columns:
-        active_sheet.cell(2, 47).value = "ostatni"
-        active_sheet.cell(2, 48).value = "signature"
-
+        
+        # Create signatures and texts:
+        active_sheet["A1"] = f"{language['title_label']} {self.month_name} {self.year}"
+        active_sheet["A2"] = f"{language['project_label']}" 
+        active_sheet["B2"] = f"{language['date_label']}"
+        active_sheet["A34"] = f"{language['total_sum_label']}"
+        active_sheet["AW2"] = f"{language['sum_per_day_label']}"
+        active_sheet["AX2"] = f"{language['overtime_label']}"
+        
+        
+        active_sheet.cell(2, 3).value = self.config["default_projects"][0]
+        active_sheet.cell(2, 4).value = self.config["default_projects"][1]
+        
+        
         day = 0
         workdays = self.get_workdays(year=self.year, month=self.month)
         # Write Dates
@@ -156,6 +188,9 @@ class CopyStyle:
                 active_sheet.cell(row, 2).value = workdays[day].strftime("%d.%m.%Y")
                 day += 1
                 
+        active_sheet.sheet_view.showGridLines = False   
+
+        active_sheet.sheet_view.zoomScale = 80
 
         self.main_workbook.save(self.file_path)
         self.main_workbook.close()

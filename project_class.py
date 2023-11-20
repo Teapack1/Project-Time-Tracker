@@ -3,8 +3,8 @@ import time
 class Project:
 
     def __init__(self):
-        self.project_name = "project"
-        self.project_time = "time"
+        self.project_name = ""
+        self.project_time = ""
         self.is_active = False
         self.cancel_var = False
         self.project_pause = False
@@ -25,3 +25,4 @@ class Project:
         self.delta_time = 0
         self.project_time = 0
         self.cancel_var = True
+        self.project_name = ""
