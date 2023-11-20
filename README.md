@@ -37,6 +37,8 @@ This is a straightforward tool for tracking time spent on different projects. It
 - All the changes from the tracking is saved, when you hit the red cross to close the.
 - At the end of the month, check the Excel file for a complete record of your work, neatly organized by day and project.
 - You can also use the normalize feature to fill days that does not reach 7.5 hours of projects.
+- You can adjust the look of your sheets by editing the "Project_Sheet.xlsx" template in the folder.
+
 
 ## License
 This project is released under the [MIT License](LICENSE).
