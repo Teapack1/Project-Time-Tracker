@@ -4,6 +4,7 @@ from openpyxl.styles import Font
 from copy import copy 
 import calendar
 import datetime
+import string
 
 class CopyStyle:
     def __init__(self, template, file_path, current_sheet_name, first_day_of_the_month, month_name, year, month, config):
@@ -72,8 +73,19 @@ class CopyStyle:
         # Copy row heights and column widths from the template to the new sheet
         for row in template_sheet.row_dimensions:
             self.new_sheet.row_dimensions[row].height = template_sheet.row_dimensions[row].height
-        for col in template_sheet.column_dimensions:
-            self.new_sheet.column_dimensions[col].width = template_sheet.column_dimensions[col].width
+
+        for column_letter in string.ascii_uppercase:  # This will iterate from 'A' to 'Z'
+            self.new_sheet.column_dimensions[column_letter].width = 15
+
+        # If you need to go beyond 'Z' (e.g., 'AA', 'AB', etc.), you'll need to extend the loop.
+        # For example, to cover columns up to 'AZ':
+        for first_letter in ['', *string.ascii_uppercase]:  # Start with empty string for single letters
+            for second_letter in string.ascii_uppercase:
+                col = first_letter + second_letter
+                self.new_sheet.column_dimensions[col].width = 15
+                if col == 'AZ':  # Stop at 'AZ'
+                    break
+
 
         template_workbook.close()
         
@@ -91,34 +103,40 @@ class CopyStyle:
         
         # Create a new sheet with the specified name
         self.new_sheet = self.main_workbook.create_sheet(title=self.current_sheet_name)
-
+        
         # Copy data and formatting from the template sheet to the new sheet
         for row in template_sheet.iter_rows(min_row=1, max_row=34, min_col=1, max_col=50):
             for cell in row:
                 new_cell = self.new_sheet.cell(row=cell.row, column=cell.column, value=cell.value)
                 self.copy_cell(cell, new_cell)
-
+        
         # Copy merged cell ranges from the template to the new sheet
         for merge_cell in template_sheet.merged_cells:
             self.new_sheet.merge_cells(str(merge_cell))
+        
 
-        # Copy row heights
         for row in template_sheet.row_dimensions:
-            if row in template_sheet.row_dimensions:
-                self.new_sheet.row_dimensions[row].height = template_sheet.row_dimensions[row].height
+            self.new_sheet.row_dimensions[row].height = template_sheet.row_dimensions[row].height
 
-        # Copy column widths
-        for col_letter, dim in template_sheet.column_dimensions.items():
-            self.new_sheet.column_dimensions[col_letter] = copy(dim)
+
+        for column_letter in string.ascii_uppercase:  # This will iterate from 'A' to 'Z'
+            self.new_sheet.column_dimensions[column_letter].width = 15
+
+        # If you need to go beyond 'Z' (e.g., 'AA', 'AB', etc.), you'll need to extend the loop.
+        # For example, to cover columns up to 'AZ':
+        for first_letter in ['', *string.ascii_uppercase]:  # Start with empty string for single letters
+            for second_letter in string.ascii_uppercase:
+                col = first_letter + second_letter
+                self.new_sheet.column_dimensions[col].width = 15
+                if col == 'AZ':  # Stop at 'AZ'
+                    break
+
 
         template_workbook.close()
-        
         self.reset_cells()
-        
-    
             
     def reset_cells(self):
-        
+    
         text_labels = {
             0: {  # English
                 "title_label": "Project work log for the month",
@@ -147,7 +165,7 @@ class CopyStyle:
         # sets initial row for the first day of the month.
         active_sheet = self.main_workbook[self.new_sheet.title]
 
-        
+       
         # Delete cells
         for col in range(3, 49):  # 49 is the end
             for row in range(2, 33):
@@ -170,8 +188,8 @@ class CopyStyle:
         
         active_sheet.cell(2, 3).value = self.config["default_projects"][0]
         active_sheet.cell(2, 4).value = self.config["default_projects"][1]
-        
-        
+
+
         day = 0
         workdays = self.get_workdays(year=self.year, month=self.month)
         # Write Dates

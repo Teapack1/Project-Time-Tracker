@@ -110,23 +110,24 @@ if not lines or lines[0] != expected_line:
 
 
 
-# ----------------------NEW MONTH SHEET--------------------------------------
+# --------------------------------NEW MONTH SHEET---------------------------------------
 
 
 
 # If sheet exists, skip, if new month, create new.
 
 try:
+    print(FILE_PATH)
     print(f"opening {month_name} month in {FILE_PATH} sheet")
     main_workbook = openpyxl.load_workbook(FILE_PATH)
     active_sheet = main_workbook[current_sheet_name]
     main_workbook.close()
 
+
 except FileNotFoundError:
     # New Month -> clone from template
     print(f"{FILE_PATH} not found. Creating new workbook")
     sheet_processor.produce_workbook()
-
 
 
 except KeyError:
@@ -135,7 +136,7 @@ except KeyError:
     sheet_processor.produce_worksheet()
 
 
-# ------------------------------------MAIN LOOP---------------------------------------
+# -----------------------------------MAIN LOOP---------------------------------------
 
 
 if __name__ == "__main__":

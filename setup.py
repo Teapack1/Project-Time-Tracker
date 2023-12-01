@@ -3,10 +3,10 @@ import json
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Setup for Project Time Tracker")
-    parser.add_argument("-l", "--excel_location", type=str, default=".", help="Directory to save the Excel file ex.: C:/Users/username/Desktop")
+    parser.add_argument("-l", "--excel_location", type=str, default=".", help="Directory to save the Excel file ex.: 'C:/Users/username/Desktop'")
     parser.add_argument("-p1", "--project1", type=str, default="Others", help="Name of the first quick project")
     parser.add_argument("-p2", "--project2", type=str, default="RnD", help="Name of the second quick project")
-    parser.add_argument("-no", "--normalize_hours", type=float, default=7.5, help="Number of hours to normalize to every day")
+    parser.add_argument("-no", "--normalize_hours", type=float, default=7.5, help="Number of hours to normalize to every day (default 7.5)")
     parser.add_argument("-w", "--language", type=int, default=0, choices=[0, 1], help="Language selection (0 - English, 1 - Czech)")
     parser.add_argument("-n", "--name", type=str, default="projectLog", help="Name the sheet file 'Hours Loggging Sheet Name'")
     return parser.parse_args()
