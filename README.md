@@ -55,6 +55,8 @@ This is a straightforward tool for tracking time spent on different projects. It
 - `-n`, `--name`: Provide a custom name for the Excel sheet where hours will be logged.  
   Example usage: `--name "Log"`
 
+### Example setup:
+`python setup.py -l "T:/Engineering/Electrical - schematic/hour logs/2022" -p1 SD -p2 RnD -no 7.5 -w 1 -n "hours Count"`
 
 ## Usage
 - When the application starts, enter the name of your project and click 'Activate'.
