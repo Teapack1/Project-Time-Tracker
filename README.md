@@ -65,5 +65,3 @@ This is a straightforward tool for tracking time spent on different projects. It
 - Check the Excel file for a complete record of your work, neatly organized by day and project, ready to provide for report.
 - You can also use the normalize feature to fill days that does not reach 7.5 hours of projects.
 
-## License
-This project is released under the [MIT License](LICENSE).
