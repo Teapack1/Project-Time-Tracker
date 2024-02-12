@@ -170,7 +170,7 @@ try:  # This is ---- last project entry to the save file ----
         dates = []
         for col in range(config["FIRST_COLUMN"], config["LAST_COLUMN"]):
             projects.append(active_sheet.cell(config["PROJECT_ROW"], col).value)
-        for row in range(3, 31):    # Static range for one month
+        for row in range(3, 38):    # Static range for one month
             dates.append(active_sheet.cell(row, 2).value)
 
         try:

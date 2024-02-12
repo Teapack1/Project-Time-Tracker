@@ -47,6 +47,11 @@ class CopyStyle:
             ):
                 workdays.append(x)
         return workdays
+    
+    def get_all_days(self, year, month):
+        num_days = calendar.monthrange(year, month)[1]
+        days = [datetime.date(year, month, day) for day in range(1, num_days + 1)]
+        return days
 
 
     def produce_worksheet(self):
@@ -61,7 +66,7 @@ class CopyStyle:
         self.new_sheet = self.main_workbook.create_sheet(title=self.current_sheet_name)
 
         # Copy data and formatting from the template sheet to the new sheet
-        for row in template_sheet.iter_rows(min_row=1, max_row=34, min_col=1, max_col=50):
+        for row in template_sheet.iter_rows(min_row=1, max_row=40, min_col=1, max_col=50):
             for cell in row:
                 new_cell = self.new_sheet.cell(row=cell.row, column=cell.column, value=cell.value)
                 self.copy_cell(cell, new_cell)
@@ -105,7 +110,7 @@ class CopyStyle:
         self.new_sheet = self.main_workbook.create_sheet(title=self.current_sheet_name)
         
         # Copy data and formatting from the template sheet to the new sheet
-        for row in template_sheet.iter_rows(min_row=1, max_row=34, min_col=1, max_col=50):
+        for row in template_sheet.iter_rows(min_row=1, max_row=40, min_col=1, max_col=50):
             for cell in row:
                 new_cell = self.new_sheet.cell(row=cell.row, column=cell.column, value=cell.value)
                 self.copy_cell(cell, new_cell)
@@ -168,12 +173,12 @@ class CopyStyle:
        
         # Delete cells
         for col in range(3, 49):  # 49 is the end
-            for row in range(2, 33):
+            for row in range(2, 38):
                 active_sheet.cell(row, col).value = None
                 cell = active_sheet.cell(row=row, column=col)
                 cell.font = Font(color=self.default_font)
         for col in range(3, 49):
-            cell = active_sheet.cell(row=33, column=col)
+            cell = active_sheet.cell(row=39, column=col)
             cell.font = Font(color=self.default_font)
 
         
@@ -181,7 +186,7 @@ class CopyStyle:
         active_sheet["A1"] = f"{language['title_label']} {self.month_name} {self.year}"
         active_sheet["A2"] = f"{language['project_label']}" 
         active_sheet["B2"] = f"{language['date_label']}"
-        active_sheet["A34"] = f"{language['total_sum_label']}"
+        active_sheet["A39"] = f"{language['total_sum_label']}"
         active_sheet["AW2"] = f"{language['sum_per_day_label']}"
         active_sheet["AX2"] = f"{language['overtime_label']}"
         
@@ -191,16 +196,12 @@ class CopyStyle:
 
 
         day = 0
-        workdays = self.get_workdays(year=self.year, month=self.month)
+        workdays = self.get_all_days(year=self.year, month=self.month)
         # Write Dates
-        for row in range(3, 33):
+        for row in range(3, 38):
             active_sheet.cell(row, 2).value = None
             if (
                 row >= month_anchor
-                and row != 9
-                and row != 15
-                and row != 21
-                and row != 27
                 and day < len(workdays)
             ):
                 active_sheet.cell(row, 2).value = workdays[day].strftime("%d.%m.%Y")
@@ -214,7 +215,7 @@ class CopyStyle:
         self.main_workbook.close()
         
         
-    def normalize_hours(self, row_start = 3, row_end = 31, col_start = 3, col_end = 49, target_hours=7.5):
+    def normalize_hours(self, row_start = 3, row_end = 38, col_start = 3, col_end = 49, target_hours=7.5):
 
         # Load the workbook
         workbook = openpyxl.load_workbook(self.file_path)
