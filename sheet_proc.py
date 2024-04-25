@@ -1,13 +1,24 @@
 import openpyxl
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font
-from copy import copy 
+from copy import copy
 import calendar
 import datetime
 import string
 
+
 class CopyStyle:
-    def __init__(self, template, file_path, current_sheet_name, first_day_of_the_month, month_name, year, month, config):
+    def __init__(
+        self,
+        template,
+        file_path,
+        current_sheet_name,
+        first_day_of_the_month,
+        month_name,
+        year,
+        month,
+        config,
+    ):
         # Initialize the CopyStyle object with paths and sheet name
         self.template_path = template
         self.file_path = file_path
@@ -18,7 +29,6 @@ class CopyStyle:
         self.month = month
         self.config = config
         self.default_font = "000000"
-        
 
     def copy_cell(self, source_cell, target_cell):
         # Copy the value and style from the source cell to the target cell
@@ -31,8 +41,7 @@ class CopyStyle:
             target_cell.number_format = source_cell.number_format
             target_cell.protection = copy(source_cell.protection)
             target_cell.alignment = copy(source_cell.alignment)
-            
-            
+
     def get_workdays(self, year, month):
         num_days = calendar.monthrange(year, month)[1]
         days = [datetime.date(year, month, day) for day in range(1, num_days + 1)]
@@ -48,7 +57,6 @@ class CopyStyle:
                 workdays.append(x)
         return workdays
 
-
     def produce_worksheet(self):
         # Load the template workbook and select the active sheet
         template_workbook = openpyxl.load_workbook(self.template_path)
@@ -61,9 +69,13 @@ class CopyStyle:
         self.new_sheet = self.main_workbook.create_sheet(title=self.current_sheet_name)
 
         # Copy data and formatting from the template sheet to the new sheet
-        for row in template_sheet.iter_rows(min_row=1, max_row=34, min_col=1, max_col=50):
+        for row in template_sheet.iter_rows(
+            min_row=1, max_row=34, min_col=1, max_col=50
+        ):
             for cell in row:
-                new_cell = self.new_sheet.cell(row=cell.row, column=cell.column, value=cell.value)
+                new_cell = self.new_sheet.cell(
+                    row=cell.row, column=cell.column, value=cell.value
+                )
                 self.copy_cell(cell, new_cell)
 
         # Copy merged cell ranges from the template to the new sheet
@@ -72,25 +84,30 @@ class CopyStyle:
 
         # Copy row heights and column widths from the template to the new sheet
         for row in template_sheet.row_dimensions:
-            self.new_sheet.row_dimensions[row].height = template_sheet.row_dimensions[row].height
+            self.new_sheet.row_dimensions[row].height = template_sheet.row_dimensions[
+                row
+            ].height
 
-        for column_letter in string.ascii_uppercase:  # This will iterate from 'A' to 'Z'
+        for (
+            column_letter
+        ) in string.ascii_uppercase:  # This will iterate from 'A' to 'Z'
             self.new_sheet.column_dimensions[column_letter].width = 15
 
         # If you need to go beyond 'Z' (e.g., 'AA', 'AB', etc.), you'll need to extend the loop.
         # For example, to cover columns up to 'AZ':
-        for first_letter in ['', *string.ascii_uppercase]:  # Start with empty string for single letters
+        for first_letter in [
+            "",
+            *string.ascii_uppercase,
+        ]:  # Start with empty string for single letters
             for second_letter in string.ascii_uppercase:
                 col = first_letter + second_letter
                 self.new_sheet.column_dimensions[col].width = 15
-                if col == 'AZ':  # Stop at 'AZ'
+                if col == "AZ":  # Stop at 'AZ'
                     break
 
-
         template_workbook.close()
-        
-        self.reset_cells()
 
+        self.reset_cells()
 
     def produce_workbook(self):
         # Load the template workbook and select the active sheet
@@ -100,43 +117,51 @@ class CopyStyle:
         # Create a new workbook and remove the default sheet
         self.main_workbook = openpyxl.Workbook()
         self.main_workbook.remove(self.main_workbook.active)
-        
+
         # Create a new sheet with the specified name
         self.new_sheet = self.main_workbook.create_sheet(title=self.current_sheet_name)
-        
+
         # Copy data and formatting from the template sheet to the new sheet
-        for row in template_sheet.iter_rows(min_row=1, max_row=34, min_col=1, max_col=50):
+        for row in template_sheet.iter_rows(
+            min_row=1, max_row=34, min_col=1, max_col=50
+        ):
             for cell in row:
-                new_cell = self.new_sheet.cell(row=cell.row, column=cell.column, value=cell.value)
+                new_cell = self.new_sheet.cell(
+                    row=cell.row, column=cell.column, value=cell.value
+                )
                 self.copy_cell(cell, new_cell)
-        
+
         # Copy merged cell ranges from the template to the new sheet
         for merge_cell in template_sheet.merged_cells:
             self.new_sheet.merge_cells(str(merge_cell))
-        
 
         for row in template_sheet.row_dimensions:
-            self.new_sheet.row_dimensions[row].height = template_sheet.row_dimensions[row].height
+            self.new_sheet.row_dimensions[row].height = template_sheet.row_dimensions[
+                row
+            ].height
 
-
-        for column_letter in string.ascii_uppercase:  # This will iterate from 'A' to 'Z'
+        for (
+            column_letter
+        ) in string.ascii_uppercase:  # This will iterate from 'A' to 'Z'
             self.new_sheet.column_dimensions[column_letter].width = 15
 
         # If you need to go beyond 'Z' (e.g., 'AA', 'AB', etc.), you'll need to extend the loop.
         # For example, to cover columns up to 'AZ':
-        for first_letter in ['', *string.ascii_uppercase]:  # Start with empty string for single letters
+        for first_letter in [
+            "",
+            *string.ascii_uppercase,
+        ]:  # Start with empty string for single letters
             for second_letter in string.ascii_uppercase:
                 col = first_letter + second_letter
                 self.new_sheet.column_dimensions[col].width = 15
-                if col == 'AZ':  # Stop at 'AZ'
+                if col == "AZ":  # Stop at 'AZ'
                     break
-
 
         template_workbook.close()
         self.reset_cells()
-            
+
     def reset_cells(self):
-    
+
         text_labels = {
             0: {  # English
                 "title_label": "Project work log for the month",
@@ -144,7 +169,7 @@ class CopyStyle:
                 "date_label": "Date",
                 "total_sum_label": "Total Sum",
                 "sum_per_day_label": "Sum per Day",
-                "overtime_label": "Overtime"
+                "overtime_label": "Overtime",
             },
             1: {  # Czech
                 "title_label": "Odpisy hodin za měsíc",
@@ -152,12 +177,12 @@ class CopyStyle:
                 "date_label": "Datum",
                 "total_sum_label": "Suma celkem",
                 "sum_per_day_label": "Suma den",
-                "overtime_label": "Přesčas"
-            }
+                "overtime_label": "Přesčas",
+            },
             # Additional languages can be added here
         }
         language = text_labels.get(self.config["language"], text_labels[0])
-        
+
         # reset cells
         first_day_weekday = self.first_day_of_the_month.weekday()
         # get what day is the first day
@@ -165,7 +190,6 @@ class CopyStyle:
         # sets initial row for the first day of the month.
         active_sheet = self.main_workbook[self.new_sheet.title]
 
-       
         # Delete cells
         for col in range(3, 49):  # 49 is the end
             for row in range(2, 33):
@@ -176,19 +200,18 @@ class CopyStyle:
             cell = active_sheet.cell(row=33, column=col)
             cell.font = Font(color=self.default_font)
 
-        
         # Create signatures and texts:
         active_sheet["A1"] = f"{language['title_label']} {self.month_name} {self.year}"
-        active_sheet["A2"] = f"{language['project_label']}" 
+        active_sheet["A2"] = f"{language['project_label']}"
         active_sheet["B2"] = f"{language['date_label']}"
         active_sheet["A34"] = f"{language['total_sum_label']}"
         active_sheet["AW2"] = f"{language['sum_per_day_label']}"
         active_sheet["AX2"] = f"{language['overtime_label']}"
-        
-        
+
         active_sheet.cell(2, 3).value = self.config["default_projects"][0]
         active_sheet.cell(2, 4).value = self.config["default_projects"][1]
-
+        active_sheet.cell(2, 5).value = self.config["default_projects"][1]
+        active_sheet.cell(2, 6).value = self.config["default_projects"][1]
 
         day = 0
         workdays = self.get_workdays(year=self.year, month=self.month)
@@ -205,36 +228,39 @@ class CopyStyle:
             ):
                 active_sheet.cell(row, 2).value = workdays[day].strftime("%d.%m.%Y")
                 day += 1
-                
-        active_sheet.sheet_view.showGridLines = False   
+
+        active_sheet.sheet_view.showGridLines = False
 
         active_sheet.sheet_view.zoomScale = 80
 
         self.main_workbook.save(self.file_path)
         self.main_workbook.close()
-        
-        
-    def normalize_hours(self, row_start = 3, row_end = 31, col_start = 3, col_end = 49, target_hours=7.5):
+
+    def normalize_hours(
+        self, row_start=3, row_end=31, col_start=3, col_end=49, target_hours=7.5
+    ):
 
         # Load the workbook
         workbook = openpyxl.load_workbook(self.file_path)
         sheet = workbook[self.current_sheet_name]
-        
- 
+
         for row in range(row_start, row_end + 1):
             row_values = []
             total_hours = 0
             # Calculate the sum of hours in the row
             for col in range(col_start, col_end + 1):
                 cell_value = sheet.cell(row, col).value
-                if isinstance(cell_value, (int, float)) and cell_value not in (None, ''):
+                if isinstance(cell_value, (int, float)) and cell_value not in (
+                    None,
+                    "",
+                ):
                     total_hours += cell_value
                     row_values.append((col, cell_value))
-            
+
             # Normalize only if the total is less than 7.5 and greater than 0
             if total_hours >= target_hours or total_hours == 0:
                 continue
-            
+
             # Calculate the factor to increase each cell value to reach the target hours
             increase_factor = target_hours / total_hours
 
@@ -242,7 +268,7 @@ class CopyStyle:
             for col, value in row_values:
                 new_value = round(value * increase_factor, 1)
                 sheet.cell(row, col).value = new_value
-                
+
         # Save and close the workbook
         workbook.save(self.file_path)
         workbook.close()
