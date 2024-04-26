@@ -210,8 +210,8 @@ class CopyStyle:
 
         active_sheet.cell(2, 3).value = self.config["default_projects"][0]
         active_sheet.cell(2, 4).value = self.config["default_projects"][1]
-        active_sheet.cell(2, 5).value = self.config["default_projects"][1]
-        active_sheet.cell(2, 6).value = self.config["default_projects"][1]
+        active_sheet.cell(2, 5).value = self.config["default_projects"][2]
+        active_sheet.cell(2, 6).value = self.config["default_projects"][3]
 
         day = 0
         workdays = self.get_workdays(year=self.year, month=self.month)
