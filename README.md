@@ -1,35 +1,34 @@
 # Project Time Tracker
 
-## Introduction
-This is a straightforward tool for tracking time spent on different projects. It's designed for anyone who needs to manage their project time, especially useful if your work involves handling multiple projects. The interface is easy to use: just type in your project, click a button, and the tracker starts. It keeps all your monthly work neatly organized in one Excel file, with a new tab for each month.
+This is a straightforward tool for tracking time spent on different projects. It's designed for anyone who needs to track their project time, especially useful if your work involves handling multiple projects. The interface is easy to use: just type in your project or click project preset, the project is tracked, then click other project and the previous stops and new starts. It keeps all your monthly work neatly organized in one Excel file, with a new tab for each month.
 
 ## Features
 - **Automatic Month Tab Creation**: Automatically starts a new tab in the Excel sheet each month.
 - **Simple Interface**: Easy to use, especially for project-based work.
 - **Monthly Excel Sheets**: Keeps all your monthly data in one file, with new tabs for each month.
-- **Normalization Feature**: Adjusts days with less than 7.5 hours and filling them to 7.5, balancing your work schedule.
-- **Predefined Project Categories**: Two default categories for common projects, making it quicker to start tracking.
+- **Normalization Feature**: Adjusts days with less than 7.5 hours, filling them to 7.5.
+- **Preset Project Categories**: Preset 4 cards for common projects, making it quicker to start tracking.
 
-## Installation for Non-Coders
+## Installation
 
 ### Prerequisites
 - Python 3.10
-- Python libraries (included see Install Dependencies)
-
+- 
 ### Steps
 1. **Download the Project**:
    - Download the ZIP file of the project from GitHub and extract it to a folder.
+   - Or clone it.
 
 2. **Install Python**:
-   - Download and install Python 3.10 from the [official Python website](https://www.python.org/downloads/). Remember to check the option 'Add Python 3.10 to PATH' during installation.
+   - Download and install Python 3.10 from the [official Python website](https://www.python.org/downloads/). Remember to check the option 'Add Python 3.10 to PATH' during installation. reboot.
 
 3. **Install Dependencies**:
    - Open Command Prompt (CMD).
    - Navigate to the folder where you extracted the project. For example, if you extracted it to `C:\ProjectTimeTracker`, type `cd C:\ProjectTimeTracker` in CMD and press Enter.
    - Type `pip install -r requirements.txt` in CMD and press Enter to install the required libraries.
 
-4. **Setup the app**:
-   - In the same CMD window, construct a command to setup your custom project tracker. See arguments bellow. Your setup command will look something like this: `py setup.py -l C:\username\Documents -p1 RnD -p2 Others -no 12 -w 1 -n "My Project Work Log"`.
+4. **Initial Setup the app**:
+   - In the same CMD window, construct a command to setup your custom project tracker. See arguments bellow. Your setup command will look something like this: `python setup.py -l C:\username\Documents -p1 RnD -p2 Others -p3 Proejct3 -p4 Project4 -no 12 -w 1 -n "My Project Work Log"`.
 
 5. **Run the Application**:
    - In the same CMD window, type `python main.py` and press Enter to start the application.
@@ -56,7 +55,7 @@ This is a straightforward tool for tracking time spent on different projects. It
   Example usage: `--name "Log"`
 
 ### Example setup:
-`python setup.py -l "T:/Engineering/Electrical - schematic/hour logs/2022" -p1 SD -p2 RnD -no 7.5 -w 1 -n "hours Count"`
+`python setup.py -l C:\username\Documents -p1 RnD -p2 Others -p3 Proejct3 -p4 Project4 -no 12 -w 1 -n "My Project Work Log"`
 
 ## Usage
 - When the application starts, enter the name of your project and click 'Activate'.
